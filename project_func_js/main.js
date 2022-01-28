@@ -1,5 +1,5 @@
 const path = require('path');
-const fn = require('./funcoes');
+const fn = require('./functions');
 
 const dirPath = path.join(__dirname, "legendas");
 
