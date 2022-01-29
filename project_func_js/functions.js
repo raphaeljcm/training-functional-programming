@@ -4,7 +4,7 @@ const path = require('path');
 function readDirectory(dirPath) {
   return new Promise((resolve, reject) => {
     try {
-      let files = fs.readdirSync(dirPath);
+      const files = fs.readdirSync(dirPath);
       const fullPath = files.map(file => path.join(dirPath, file));
 
       resolve(fullPath);
@@ -30,16 +30,68 @@ function readEachFile(path) {
   });
 }
 
-function elementsFinishedWith(array, custom) {
-  return array.filter(el => el.endsWith(custom));
+function elementsFinishedWith(custom) {
+  return function(array) {
+    return array.filter(el => el.endsWith(custom));
+  }
 }
 
 function removeIfEmpty(array) {
   return array.filter(el => el.trim());
 }
 
-function removeIfIncludes(array, custom) {
-  return array.filter(el => !el.includes(custom));
+function removeIfIncludes(custom) {
+  return function(array) {
+    return array.filter(el => !el.includes(custom));
+  }
+}
+
+function removeIfOnlyNumber(array) {
+  return array.filter(el => {
+    const num = parseInt(el.trim());
+
+    return num !== num; // it'll only be TRUE if it return NaN, which means, there are words
+  }); 
+}
+
+function removeSymbols(symbols) {
+  return function(array) {
+    return array.map(el => {
+      return symbols.reduce((acc, symbol) => {
+        return acc.split(symbol).join('');
+      }, el); 
+    });
+  }
+}
+
+function gatheringElements(array) {
+  return array.join(' '); 
+}  
+
+function separatingTextBy(symbol) {
+  return function(text) {
+    return text.split(symbol);
+  }
+}
+
+function gatheringWords(words) { 
+  return Object.values(words.reduce((acc, el) => { // with Object.values I'll only return the values, didn't know that, awesome!
+    const word = el.toLowerCase();
+    const amount = acc[word] ? acc[word].amount + 1 : 1;
+
+    acc[word] = { word, amount } // acc = {} which means: { word: {word: word(variable), amount: amount(variable)}}. Because of that I used Object.values
+
+    return acc;
+  }, {})); 
+}
+
+function orderByNumericAttribute(key, order = 'asc') {
+  return function(array) {
+    const asc = (obj1, obj2) => obj1[key] - obj2[key];
+    const desc = (obj1, obj2) => obj2[key] - obj1[key];
+
+    return array.sort(order === 'asc' ? asc : desc);
+  }
 }
 
 module.exports = {
@@ -49,4 +101,10 @@ module.exports = {
   elementsFinishedWith,
   removeIfEmpty,
   removeIfIncludes,
+  removeIfOnlyNumber,
+  removeSymbols,
+  gatheringElements,
+  separatingTextBy,
+  gatheringWords,
+  orderByNumericAttribute,
 }
