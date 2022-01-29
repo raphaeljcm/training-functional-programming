@@ -64,7 +64,7 @@ function removeSymbols(symbols) {
   }
 }
 
-function gatheringElements(array) {
+function joiningElements(array) {
   return array.join(' '); 
 }  
 
@@ -74,7 +74,7 @@ function separatingTextBy(symbol) {
   }
 }
 
-function gatheringWords(words) { 
+function joiningWords(words) { 
   return Object.values(words.reduce((acc, el) => { // with Object.values I'll only return the values, didn't know that, awesome!
     const word = el.toLowerCase();
     const amount = acc[word] ? acc[word].amount + 1 : 1;
@@ -94,6 +94,46 @@ function orderByNumericAttribute(key, order = 'asc') {
   }
 }
 
+function creatingJsonFile(dirPath) {
+  return function(array) {
+    return new Promise((resolve, reject) => {
+      try { 
+        const json = JSON.stringify(array);
+        const fullPath = path.join(dirPath, 'subtitles.json')
+
+        fs.writeFile(fullPath, json, 'utf-8', err => {
+          if(err) {
+            reject(err);
+          } else {
+            resolve('File created.');
+          }
+        });
+
+      } catch(err) {
+        reject(err);
+      }
+    });
+  }
+}
+
+function readingJsonFile(dirPath) {
+  return new Promise((resolve, reject) => {
+    try {
+      const fullPath = path.join(dirPath, 'subtitles.json');
+      fs.readFile(fullPath, (err, content) => {
+        if(content) {
+          const fileInJson = JSON.parse(content);
+          resolve(fileInJson);
+        } else {
+          reject(err);
+        }
+      });
+    } catch(err) {
+      reject(err);
+    }
+  });
+}
+  
 module.exports = {
   readDirectory,
   readFiles, 
@@ -103,8 +143,10 @@ module.exports = {
   removeIfIncludes,
   removeIfOnlyNumber,
   removeSymbols,
-  gatheringElements,
+  joiningElements,
   separatingTextBy,
-  gatheringWords,
+  joiningWords,
   orderByNumericAttribute,
+  creatingJsonFile,
+  readingJsonFile,  
 }
