@@ -1,13 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 
+function composicao(...fns) {
+  return function(valor) {
+    return fns.reduce(async(acc, fn) => {
+      if(Promise.resolve(acc) === acc) { // is it a promise?
+        return fn(await acc);
+      } else {
+        return fn(acc);
+      }
+    }, valor);
+  }
+}
+
 function readDirectory(dirPath) {
   return new Promise((resolve, reject) => {
     try {
-      const files = fs.readdirSync(dirPath);
-      const fullPath = files.map(file => path.join(dirPath, file));
+      const files = fs.readdirSync(dirPath).map(file => path.join(dirPath, file));
 
-      resolve(fullPath);
+      resolve(files);
     } catch(err) {
       reject(err);
     }
@@ -89,8 +100,13 @@ function orderByNumericAttribute(key, order = 'asc') {
   return function(array) {
     const asc = (obj1, obj2) => obj1[key] - obj2[key];
     const desc = (obj1, obj2) => obj2[key] - obj1[key];
-
-    return array.sort(order === 'asc' ? asc : desc);
+    
+    // Here I'm using Imutability, pay attention
+    // [...array] I'm creating a NEW array and cloning the array passed in the function into it
+    // this way, I won't make a change in the previous array, very important
+    // If I had not done that, it would be a coleteral damage and would change my array
+    // I can do the spread operator or Object.freeze to prevent any updates in it
+    return [...array].sort(order === 'asc' ? asc : desc);
   }
 }
 
@@ -135,6 +151,7 @@ function readingJsonFile(dirPath) {
 }
   
 module.exports = {
+  composicao,
   readDirectory,
   readFiles, 
   readEachFile,
